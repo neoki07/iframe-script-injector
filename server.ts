@@ -19,7 +19,7 @@ const server = serve({
       if (path === "/index.html") {
         const content = await file.text();
         const injectedScript =
-          '<script src="/scripts/injected.ts" type="module"></script>';
+          '<script src="/scripts/injected.js" type="module"></script>';
         const modifiedContent = content.replace(
           "</head>",
           `${injectedScript}</head>`,
