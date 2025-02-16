@@ -15,13 +15,12 @@ const server = serve({
     try {
       const file = Bun.file(`./public${path}`);
 
-      // If this is an HTML file, inject the script
-      if (path.endsWith(".html")) {
+      // スクリプトの注入をindex.htmlのみに限定
+      if (path === "/index.html") {
         const content = await file.text();
         const injectedScript =
           '<script src="/scripts/injected.js" type="module"></script>';
 
-        // スクリプトを</body>の直前に挿入
         const modifiedContent = content.replace(
           "</body>",
           `${injectedScript}</body>`,
