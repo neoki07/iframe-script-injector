@@ -1,5 +1,7 @@
 import { serve } from "bun";
 
+const INJECT_SCRIPT = process.env.INJECT_SCRIPT === "true";
+
 const server = serve({
   port: 3000,
   async fetch(req) {
@@ -18,6 +20,13 @@ const server = serve({
       // スクリプトの注入をindex.htmlのみに限定
       if (path === "/index.html") {
         const content = await file.text();
+
+        if (!INJECT_SCRIPT) {
+          return new Response(content, {
+            headers: { "Content-Type": "text/html" },
+          });
+        }
+
         const injectedScript =
           '<script src="/scripts/injected.js" type="module"></script>';
 
