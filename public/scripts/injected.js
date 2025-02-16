@@ -89,16 +89,52 @@ const addElementToIframes = () => {
   };
 
   const processIframe = (iframe) => {
+    const handleIframeContent = (iframeDoc) => {
+      if (!iframeDoc) return;
+
+      // DOMContentLoadedイベントが発火した時点でバッジを表示
+      const addBadgeOnLoad = () => {
+        addStatusToDocument(iframeDoc);
+        
+        // iframe内の変更を監視
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+              if (node instanceof HTMLIFrameElement) {
+                processIframe(node);
+              }
+            });
+          });
+        });
+
+        observer.observe(iframeDoc.documentElement, {
+          childList: true,
+          subtree: true
+        });
+      };
+
+      // 子iframeを処理
+      const processChildIframes = () => {
+        const childIframes = iframeDoc.getElementsByTagName('iframe');
+        Array.from(childIframes).forEach(processIframe);
+      };
+
+      if (iframeDoc.readyState === 'loading') {
+        iframeDoc.addEventListener('DOMContentLoaded', () => {
+          addBadgeOnLoad();
+          // DOMContentLoaded後に子iframeを処理
+          processChildIframes();
+        });
+      } else {
+        addBadgeOnLoad();
+        processChildIframes();
+      }
+    };
+
     // 既存のコンテンツを処理
     try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      if (iframeDoc && iframeDoc.readyState === 'complete') {
-        addStatusToDocument(iframeDoc);
-        
-        // 子iframeを処理
-        const childIframes = iframeDoc.getElementsByTagName('iframe');
-        Array.from(childIframes).forEach(processIframe);
-      }
+      handleIframeContent(iframeDoc);
     } catch (error) {
       console.warn('Cannot access iframe content:', error);
     }
@@ -107,29 +143,7 @@ const addElementToIframes = () => {
     iframe.addEventListener('load', function() {
       try {
         const iframeDoc = this.contentDocument || this.contentWindow.document;
-        if (iframeDoc) {
-          addStatusToDocument(iframeDoc);
-          
-          // 子iframeを処理
-          const childIframes = iframeDoc.getElementsByTagName('iframe');
-          Array.from(childIframes).forEach(processIframe);
-
-          // iframe内の変更を監視
-          const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              mutation.addedNodes.forEach((node) => {
-                if (node instanceof HTMLIFrameElement) {
-                  processIframe(node);
-                }
-              });
-            });
-          });
-
-          observer.observe(iframeDoc.documentElement, {
-            childList: true,
-            subtree: true
-          });
-        }
+        handleIframeContent(iframeDoc);
       } catch (error) {
         console.warn('Cannot access iframe content:', error);
       }
