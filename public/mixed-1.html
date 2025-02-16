@@ -4,19 +4,40 @@
   <meta charset="UTF-8">
   <title>Mixed Static Iframe</title>
   <style>
-    body { padding: 10px; font-family: -apple-system, system-ui, sans-serif; }
-    .info { color: #64748b; font-size: 0.875rem; margin-bottom: 10px; }
+    body { 
+      padding: 16px; 
+      font-family: -apple-system, system-ui, sans-serif;
+      margin: 0;
+    }
+    .info { 
+      color: #64748b; 
+      font-size: 0.875rem; 
+      margin-bottom: 12px; 
+    }
     button {
       background: #0ea5e9;
       color: white;
       border: none;
-      padding: 6px 12px;
+      padding: 8px 16px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 12px;
     }
     button:hover {
       background: #0284c7;
+    }
+    #container {
+      margin-top: 12px;
+    }
+    iframe {
+      width: 100%;
+      max-width: 100%;
+      border: 1px dashed #94a3b8;
+      box-sizing: border-box;
+      display: block;
+      margin-bottom: 12px;
     }
   </style>
 </head>
@@ -30,7 +51,6 @@
       const container = document.getElementById('container');
       const iframe = document.createElement('iframe');
       iframe.src = '/dynamic-1.html';
-      iframe.width = '700';
       iframe.height = '150';
       container.appendChild(iframe);
     }
