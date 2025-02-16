@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "Sample app for iframe script injection",
   "scripts": {
-    "start": "bun --hot run server.ts"
+    "start": "bun --hot run server.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "prettier": "latest"
   }
 }
