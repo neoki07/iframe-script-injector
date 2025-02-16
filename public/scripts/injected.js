@@ -3,8 +3,8 @@ const addElementToIframes = () => {
   const mainElement = document.createElement("div");
   mainElement.style.cssText = `
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 8px;
+    right: 8px;
     background: #F8FAFC;
     color: #475569;
     padding: 3px 8px 3px 3px;
