@@ -1,0 +1,11 @@
+{
+  "name": "iframe-script-injector",
+  "version": "1.0.0",
+  "description": "Sample app for iframe script injection",
+  "scripts": {
+    "start": "bun --hot run server.ts"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
