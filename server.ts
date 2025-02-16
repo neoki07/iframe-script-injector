@@ -1,6 +1,20 @@
 import { serve } from "bun";
 
 const INJECT_SCRIPT = process.env.INJECT_SCRIPT === "true";
+const USE_GTM = process.env.USE_GTM === "true";
+
+const GTM_SNIPPET_HEAD = `<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PGTNL93F');</script>
+<!-- End Google Tag Manager -->`;
+
+const GTM_SNIPPET_BODY = `<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PGTNL93F"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->`;
 
 const server = serve({
   port: 3000,
@@ -21,19 +35,24 @@ const server = serve({
       if (path === "/index.html") {
         const content = await file.text();
 
-        if (!INJECT_SCRIPT) {
-          return new Response(content, {
-            headers: { "Content-Type": "text/html" },
-          });
+        let modifiedContent = content;
+
+        // GTMスニペットの注入
+        if (USE_GTM) {
+          modifiedContent = modifiedContent
+            .replace("</head>", `${GTM_SNIPPET_HEAD}</head>`)
+            .replace("<body>", `<body>${GTM_SNIPPET_BODY}`);
         }
 
-        const injectedScript =
-          '<script src="/scripts/injected.js" type="module"></script>';
-
-        const modifiedContent = content.replace(
-          "</body>",
-          `${injectedScript}</body>`,
-        );
+        // スクリプトの注入
+        if (INJECT_SCRIPT) {
+          const injectedScript =
+            '<script src="/scripts/injected.js" type="module"></script>';
+          modifiedContent = modifiedContent.replace(
+            "</body>",
+            `${injectedScript}</body>`,
+          );
+        }
 
         return new Response(modifiedContent, {
           headers: { "Content-Type": "text/html" },
