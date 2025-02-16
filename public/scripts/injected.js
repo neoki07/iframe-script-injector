@@ -74,44 +74,76 @@ const addElementToIframes = () => {
   mainElement.appendChild(statusDot);
   mainElement.appendChild(textSpan);
 
-  // アニメーション効果
-  mainElement.style.transform = "translateY(-8px) scale(0.96)";
-  mainElement.style.opacity = "0";
-  document.body.appendChild(mainElement);
+  const addStatusToDocument = (doc) => {
+    if (!doc.querySelector('div[style*="Script Injected"]')) {
+      const newElement = mainElement.cloneNode(true);
+      newElement.style.transform = "translateY(-8px) scale(0.96)";
+      newElement.style.opacity = "0";
+      doc.body.appendChild(newElement);
 
-  // 表示アニメーション
-  requestAnimationFrame(() => {
-    mainElement.style.transform = "translateY(0) scale(1)";
-    mainElement.style.opacity = "1";
-  });
+      requestAnimationFrame(() => {
+        newElement.style.transform = "translateY(0) scale(1)";
+        newElement.style.opacity = "1";
+      });
+    }
+  };
 
   const processIframe = (iframe) => {
-    iframe.addEventListener("load", function () {
-      const iframeDocument = this.contentWindow.document;
-
-      // 既に要素が追加されているかチェック
-      if (!iframeDocument.querySelector('div[style*="Script Injected"]')) {
-        const newElement = mainElement.cloneNode(true);
-        iframeDocument.body.appendChild(newElement);
-
-        // 表示アニメーション
-        requestAnimationFrame(() => {
-          newElement.style.transform = "translateY(0) scale(1)";
-          newElement.style.opacity = "1";
-        });
+    // 既存のコンテンツを処理
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      if (iframeDoc && iframeDoc.readyState === 'complete') {
+        addStatusToDocument(iframeDoc);
+        
+        // 子iframeを処理
+        const childIframes = iframeDoc.getElementsByTagName('iframe');
+        Array.from(childIframes).forEach(processIframe);
       }
+    } catch (error) {
+      console.warn('Cannot access iframe content:', error);
+    }
 
-      // ネストされたiframeを処理
-      const nestedIframes = [...iframeDocument.getElementsByTagName("iframe")];
-      nestedIframes.forEach(processIframe);
+    // 新しいコンテンツのロードを監視
+    iframe.addEventListener('load', function() {
+      try {
+        const iframeDoc = this.contentDocument || this.contentWindow.document;
+        if (iframeDoc) {
+          addStatusToDocument(iframeDoc);
+          
+          // 子iframeを処理
+          const childIframes = iframeDoc.getElementsByTagName('iframe');
+          Array.from(childIframes).forEach(processIframe);
+
+          // iframe内の変更を監視
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              mutation.addedNodes.forEach((node) => {
+                if (node instanceof HTMLIFrameElement) {
+                  processIframe(node);
+                }
+              });
+            });
+          });
+
+          observer.observe(iframeDoc.documentElement, {
+            childList: true,
+            subtree: true
+          });
+        }
+      } catch (error) {
+        console.warn('Cannot access iframe content:', error);
+      }
     });
   };
 
-  // 現在のページ内のすべてのiframeを処理
-  const iframes = [...document.getElementsByTagName("iframe")];
-  iframes.forEach(processIframe);
+  // メインドキュメントにステータスを追加
+  addStatusToDocument(document);
 
-  // 動的に追加されるiframeを監視
+  // 現在のiframeを処理
+  const iframes = document.getElementsByTagName('iframe');
+  Array.from(iframes).forEach(processIframe);
+
+  // 新しいiframeを監視
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -124,7 +156,7 @@ const addElementToIframes = () => {
 
   observer.observe(document.documentElement, {
     childList: true,
-    subtree: true,
+    subtree: true
   });
 };
 
