@@ -95,7 +95,7 @@ const addElementToIframes = () => {
       // DOMContentLoadedイベントが発火した時点でバッジを表示
       const addBadgeOnLoad = () => {
         addStatusToDocument(iframeDoc);
-        
+
         // iframe内の変更を監視
         const observer = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
@@ -109,18 +109,18 @@ const addElementToIframes = () => {
 
         observer.observe(iframeDoc.documentElement, {
           childList: true,
-          subtree: true
+          subtree: true,
         });
       };
 
       // 子iframeを処理
       const processChildIframes = () => {
-        const childIframes = iframeDoc.getElementsByTagName('iframe');
+        const childIframes = iframeDoc.getElementsByTagName("iframe");
         Array.from(childIframes).forEach(processIframe);
       };
 
-      if (iframeDoc.readyState === 'loading') {
-        iframeDoc.addEventListener('DOMContentLoaded', () => {
+      if (iframeDoc.readyState === "loading") {
+        iframeDoc.addEventListener("DOMContentLoaded", () => {
           addBadgeOnLoad();
           // DOMContentLoaded後に子iframeを処理
           processChildIframes();
@@ -136,16 +136,16 @@ const addElementToIframes = () => {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       handleIframeContent(iframeDoc);
     } catch (error) {
-      console.warn('Cannot access iframe content:', error);
+      console.warn("Cannot access iframe content:", error);
     }
 
     // 新しいコンテンツのロードを監視
-    iframe.addEventListener('load', function() {
+    iframe.addEventListener("load", function () {
       try {
         const iframeDoc = this.contentDocument || this.contentWindow.document;
         handleIframeContent(iframeDoc);
       } catch (error) {
-        console.warn('Cannot access iframe content:', error);
+        console.warn("Cannot access iframe content:", error);
       }
     });
   };
@@ -154,7 +154,7 @@ const addElementToIframes = () => {
   addStatusToDocument(document);
 
   // 現在のiframeを処理
-  const iframes = document.getElementsByTagName('iframe');
+  const iframes = document.getElementsByTagName("iframe");
   Array.from(iframes).forEach(processIframe);
 
   // 新しいiframeを監視
@@ -170,7 +170,7 @@ const addElementToIframes = () => {
 
   observer.observe(document.documentElement, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 };
 
