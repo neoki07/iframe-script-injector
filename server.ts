@@ -2,7 +2,7 @@ import { serve } from "bun";
 
 const server = serve({
   port: 3000,
-  fetch(req) {
+  async fetch(req) {
     const url = new URL(req.url);
 
     // Ignore favicon requests
@@ -14,6 +14,22 @@ const server = serve({
 
     try {
       const file = Bun.file(`./public${path}`);
+
+      // If this is index.html, inject the script
+      if (path === "/index.html") {
+        const content = await file.text();
+        const injectedScript =
+          '<script src="/scripts/injected.ts" type="module"></script>';
+        const modifiedContent = content.replace(
+          "</head>",
+          `${injectedScript}</head>`,
+        );
+        return new Response(modifiedContent, {
+          headers: { "Content-Type": "text/html" },
+        });
+      }
+
+      // For other files, return as is
       return new Response(file);
     } catch (error) {
       return new Response("Not Found", { status: 404 });
